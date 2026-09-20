@@ -30,18 +30,14 @@ jobs:
       - name: Add Android Platform
         run: npx cap add android
 
-      - name: Inject Fullscreen and Storage Permissions
+      - name: Inject Permissions
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           
-          # إضافة أذونات الإنترنت والوسائط والتخزين
-          sed -i '/<application/i \    <uses-permission android:name="android.permission.INTERNET" />' $MANIFEST
+          # إضافة أذونات التخزين والوسائط المطلوبة
           sed -i '/<application/i \    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />' $MANIFEST
           sed -i '/<application/i \    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />' $MANIFEST
           sed -i '/<application/i \    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />' $MANIFEST
-          
-          # تفعيل وضع ملء الشاشة
-          sed -i 's/AppTheme.NoActionBar/AppTheme.NoActionBar.FullScreen/g' $MANIFEST || true
 
       - name: Sync Web Assets to Android
         run: npx cap sync android
