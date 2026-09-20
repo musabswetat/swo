@@ -1,0 +1,21 @@
+{
+  "name": "shorts-capacitor-ytdlp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shorts viewer with native yt-dlp Android downloader and fallback chain",
+  "scripts": {
+    "cap:add:android": "npx cap add android",
+    "cap:sync": "npx cap sync android",
+    "android:setup": "node scripts/setup-android.mjs",
+    "android:build": "npm run android:setup && cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/filesystem": "8.1.3",
+    "@capacitor/status-bar": "8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2"
+  }
+}
