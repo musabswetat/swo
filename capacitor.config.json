@@ -1,0 +1,6 @@
+{
+  "appId": "com.shorts.app",
+  "appName": "Shorts",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
