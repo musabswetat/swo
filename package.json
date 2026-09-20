@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "Shorts viewer with native yt-dlp Android downloader and fallback chain",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "cap:add:android": "npx cap add android",
     "cap:sync": "npx cap sync android",
@@ -16,6 +19,7 @@
     "@capacitor/status-bar": "8.0.3"
   },
   "devDependencies": {
-    "@capacitor/cli": "8.5.2"
+    "@capacitor/cli": "8.5.2",
+    "typescript": "^5.9.2"
   }
 }
