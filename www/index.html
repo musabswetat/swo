@@ -22,7 +22,7 @@
       overflow: hidden;
     }
 
-    /* حاوية العرض والتمرير الرأسي الصارم */
+    /* حاوية العرض والتمرير الرأسي */
     .shorts-container {
       width: 100vw;
       height: 100vh;
@@ -33,7 +33,6 @@
     }
     .shorts-container::-webkit-scrollbar { display: none; }
 
-    /* الشريحة الفردية */
     .short-card {
       width: 100vw;
       height: 100vh;
@@ -95,7 +94,7 @@
       gap: 6px;
     }
 
-    /* تدرج ظلي سفلي للنصوص */
+    /* التدرج الظلي السفلي */
     .overlay-gradient {
       position: absolute;
       bottom: 0;
@@ -215,7 +214,7 @@
       overflow: hidden;
     }
 
-    /* شريط التقدم الدقيق */
+    /* شريط التقدم السفلي */
     .progress-bar-container {
       position: absolute;
       bottom: calc(52px + env(safe-area-inset-bottom, 0px));
@@ -261,7 +260,7 @@
     .nav-item.active { color: #fff; }
     .nav-item svg { width: 22px; height: 22px; fill: currentColor; margin-bottom: 2px; }
 
-    /* حركة القلب النابض عند النقر المزدوج */
+    /* تأثير القلب النابض */
     .heart-pop-container {
       position: absolute;
       inset: 0;
@@ -292,7 +291,7 @@
       100% { transform: scale(1.5); opacity: 0; }
     }
 
-    /* النافذة السفلية المنبثقة للتنزيل */
+    /* النافذة المنبثقة */
     .modal-sheet {
       position: fixed;
       bottom: -100%;
@@ -380,20 +379,22 @@
 
   <div class="sheet-overlay" id="overlay" onclick="closeModal()"></div>
   <div class="modal-sheet" id="modalSheet">
-    <div style="color:#fff;font-weight:bold;margin-bottom:12px;text-align:center;">تنزيل وحفظ فيديو Shorts في الهاتف</div>
-    <input type="text" id="videoUrlInput" class="input-box" placeholder="ضع رابط YouTube Shorts هنا...">
-    <button class="action-modal-btn" id="downloadBtn" onclick="handleProcessLink()">تنزيل وحفظ في المجلد</button>
+    <div style="color:#fff;font-weight:bold;margin-bottom:12px;text-align:center;">إضافة وحفظ فيديو في التطبيق</div>
+    <div style="color:#999;font-size:11px;text-align:center;margin-bottom:10px;">سيجرب التطبيق عدة طرق تلقائيًا، من الهاتف ثم السيرفر الخاص ثم خدمات الاستخراج.</div>
+    <input type="text" id="videoUrlInput" class="input-box" placeholder="الصق رابط YouTube Shorts هنا...">
+    <button class="action-modal-btn" id="downloadBtn" onclick="handleProcessLink()">حفظ وتشغيل فوري</button>
   </div>
 
   <script>
     const TARGET_FOLDER = 'ShortsVideos';
+    const YT_STORAGE_KEY = 'shorts_saved_youtube_list_v1';
 
     // ==========================================================
-    // 1. خوارزمية الترتيب واحتساب سلوك المشاهدة (Algorithm)
+    // 1. خوارزمية الترتيب السلوكي
     // ==========================================================
     class ShortsAlgorithm {
       constructor() {
-        this.key = "shorts_algorithm_scores_v1";
+        this.key = "shorts_algorithm_scores_v2";
         this.scores = JSON.parse(localStorage.getItem(this.key)) || {};
       }
 
@@ -404,10 +405,8 @@
       onFinishWatch(id, watchTime, totalDuration, loopCount) {
         let score = this.getScore(id);
         if (watchTime < 2.0 && loopCount === 0) {
-          // عقوبة التخطي السريع
           score = Math.max(10, score - 40);
         } else if ((watchTime / totalDuration) >= 0.85 || loopCount > 0) {
-          // مكافأة إكمال المقطع والتكرار
           score += 50 + (loopCount * 30);
         }
         this.scores[id] = score;
@@ -423,7 +422,7 @@
 
       rank(list) {
         return [...list].sort((a, b) => {
-          if (Math.random() < 0.20) return 0.5 - Math.random(); // نسبة استكشاف عشوائية
+          if (Math.random() < 0.20) return 0.5 - Math.random();
           return this.getScore(b.id) - this.getScore(a.id);
         });
       }
@@ -436,12 +435,11 @@
     const algo = new ShortsAlgorithm();
 
     // ==========================================================
-    // 2. مدير تدوير المشغلات والذاكرة (Sliding Window Virtualizer)
+    // 2. محرك تدوير المشغلات والذاكرة
     // ==========================================================
     class FeedVirtualizer {
-      constructor(container, onActiveChange) {
+      constructor(container) {
         this.container = container;
-        this.onActiveChange = onActiveChange;
         this.videos = [];
         this.cardElements = [];
         this.currentIndex = -1;
@@ -481,7 +479,7 @@
                 <span>تعليق</span>
               </button>
               <button class="action-btn">
-                <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/></svg>
                 <span>مشاركة</span>
               </button>
               <div class="sound-disk">
@@ -522,7 +520,6 @@
       updateActiveWindow(newIndex) {
         if (newIndex === this.currentIndex) return;
 
-        // تسجيل سلوك المشاهدة للفيديو السابق بالخوارزمية
         if (this.currentIndex >= 0 && this.videos[this.currentIndex]) {
           const prevVideo = this.videos[this.currentIndex];
           const prevCard = this.cardElements[this.currentIndex];
@@ -538,7 +535,6 @@
 
         const activeRange = new Set([newIndex - 1, newIndex, newIndex + 1]);
 
-        // تدوير المشغلات وحذف البعيدة لتفريغ الذاكرة
         this.cardElements.forEach((card, idx) => {
           const wrapper = card.querySelector(".video-wrapper");
           if (activeRange.has(idx)) {
@@ -556,7 +552,6 @@
               }
             }
           } else {
-            // تفريغ فوري لمشغل الفيديو وتحرير الرام
             const vid = wrapper.querySelector("video");
             if (vid) {
               vid.pause();
@@ -570,7 +565,7 @@
 
       attachVideoElement(wrapper, item, index) {
         if (item.type === 'youtube') {
-          wrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${item.src}?autoplay=1&loop=1&playlist=${item.src}&controls=0" allow="autoplay" allowfullscreen></iframe>`;
+          wrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${item.src}?autoplay=1&loop=1&playlist=${item.src}&controls=0&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
         } else {
           const vid = document.createElement("video");
           vid.src = item.src;
@@ -599,7 +594,6 @@
         let lastTap = 0;
         let holdTimer = null;
 
-        // الضغط المطول للإيقاف المؤقت
         card.addEventListener("touchstart", (e) => {
           if (e.target.closest(".action-bar") || e.target.closest(".meta-content")) return;
           holdTimer = setTimeout(() => {
@@ -616,7 +610,6 @@
           }
         });
 
-        // النقر المزدوج لإظهار القلب والإعجاب
         card.addEventListener("click", (e) => {
           if (e.target.closest(".action-bar") || e.target.closest(".meta-content")) return;
           const now = Date.now();
@@ -652,7 +645,7 @@
     }
 
     // ==========================================================
-    // 3. تهيئة بيئة Capacitor والتخزين في الهاتف
+    // 3. تهيئة بيئة Capacitor وتحميل الملفات
     // ==========================================================
     window.addEventListener('DOMContentLoaded', async () => {
       if (window.Capacitor && window.Capacitor.Plugins.StatusBar) {
@@ -676,143 +669,516 @@
             recursive: true
           });
         } catch (_) {}
-        await loadLocalShorts();
       }
+      await loadCombinedFeed();
     }
 
     // ==========================================================
-    // 4. محرك استخراج التدفق المباشر وتنزيل ملفات MP4
+    // 4. دالة استخراج ذكية مع قاطع للمهلة (Timeout Controller)
     // ==========================================================
     function extractYouTubeId(url) {
-      const match = url.match(/(?:shorts\/|v=|youtu\.be\/|\/v\/|embed\/)([a-zA-Z0-9_-]{11})/);
-      return match ? match[1] : null;
+      try {
+        const u = new URL(url);
+        const host = u.hostname.replace(/^www\./, '').toLowerCase();
+
+        if (host === 'youtu.be') {
+          const id = u.pathname.split('/').filter(Boolean)[0];
+          return id && /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null;
+        }
+
+        if (host === 'youtube.com' || host === 'm.youtube.com') {
+          const v = u.searchParams.get('v');
+          if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) return v;
+
+          const parts = u.pathname.split('/').filter(Boolean);
+          const pos = parts.findIndex(x => ['shorts', 'embed', 'v'].includes(x));
+          if (pos >= 0 && parts[pos + 1] && /^[a-zA-Z0-9_-]{11}$/.test(parts[pos + 1])) {
+            return parts[pos + 1];
+          }
+        }
+      } catch (_) {}
+      return null;
     }
 
-    async function resolveDirectStream(rawUrl, videoId) {
-      const cobaltInstances = ["https://cobaltapi.getnickel.app", "https://co.wuk.sh"];
-      for (const host of cobaltInstances) {
-        try {
-          const res = await fetch(host, {
-            method: "POST",
-            headers: { "Accept": "application/json", "Content-Type": "application/json" },
-            body: JSON.stringify({ url: rawUrl, videoQuality: "720" })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.url) {
-              return { streamUrl: data.url, title: "YouTube Short", channel: "@ShortsCreator" };
-            }
+    // ==========================================================
+    // 4. محرك تنزيل متعدد المسارات
+    // الترتيب:
+    // 1) محرك yt-dlp أصلي داخل APK إن كان Plugin مثبتاً
+    // 2) سيرفر منزلي/خاص عبر Tailscale أو HTTPS إذا تم ضبطه
+    // 3) Cobalt API
+    // 4) Invidious instances الرسمية
+    // 5) Invidious احتياطي
+    // 6) تشغيل YouTube داخل التطبيق إذا فشل كل شيء
+    //
+    // ملاحظة:
+    // المساران 1 و2 اختياريان. بقية المسارات تعمل بدون Native Plugin.
+    // استخدم التنزيل للمحتوى الذي تملك حق تنزيله، وبما يتوافق مع شروط الخدمة.
+    // ==========================================================
+
+    const DOWNLOAD_CONFIG = {
+      // ضع هنا عنوان سيرفرك المنزلي إن أردت استخدامه:
+      // مثال Tailscale: http://100.x.x.x:8787
+      // أو HTTPS: https://example.com
+      PRIVATE_SERVER_URL: localStorage.getItem("shorts_private_server_url") || "",
+
+      QUALITY: "720",
+      TIMEOUT_MS: 12000,
+
+      // نقطة Invidious احتياطية كانت موجودة في النسخة الأصلية.
+      FALLBACK_INVIDIOUS: [
+        "https://inv.tux.pizza"
+      ]
+    };
+
+    function setDownloadStatus(text) {
+      const btn = document.getElementById("downloadBtn");
+      if (btn) btn.innerText = text;
+    }
+
+    function withTimeout(promise, ms) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), ms);
+      return {
+        promise: promise(controller.signal).finally(() => clearTimeout(timer)),
+        controller
+      };
+    }
+
+    async function getJson(url, options = {}, timeout = DOWNLOAD_CONFIG.TIMEOUT_MS) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeout);
+
+      try {
+        const response = await fetch(url, {
+          ...options,
+          signal: controller.signal,
+          headers: {
+            "Accept": "application/json",
+            ...(options.headers || {})
           }
-        } catch (_) {}
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.json();
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function isUsableMediaUrl(value) {
+      return typeof value === "string" &&
+             /^https?:\/\//i.test(value) &&
+             value.length > 20;
+    }
+
+    function extractMediaUrlFromCobalt(data) {
+      if (!data || typeof data !== "object") return null;
+
+      // Cobalt v10 commonly returns redirect/tunnel URLs.
+      if (isUsableMediaUrl(data.url)) return data.url;
+
+      if (data.status === "tunnel" && isUsableMediaUrl(data.url)) return data.url;
+      if (data.status === "redirect" && isUsableMediaUrl(data.url)) return data.url;
+
+      if (data.data && isUsableMediaUrl(data.data.url)) return data.data.url;
+      if (data.result && isUsableMediaUrl(data.result.url)) return data.result.url;
+
+      return null;
+    }
+
+    async function tryNativeYtDlp(rawUrl) {
+      // This hook becomes active when the Android project contains
+      // a Capacitor plugin named YtDlp with:
+      // YtDlp.download({ url, outputFolder, quality })
+      //
+      // It also accepts the older YoutubeDL name for compatibility.
+      try {
+        if (!window.Capacitor || !window.Capacitor.Plugins) return null;
+
+        const plugins = window.Capacitor.Plugins;
+        const plugin = plugins.YtDlp || plugins.YoutubeDL || plugins.YoutubeDl;
+        if (!plugin || typeof plugin.download !== "function") return null;
+
+        setDownloadStatus("المحاولة 1/5: yt-dlp داخل الهاتف...");
+
+        const result = await plugin.download({
+          url: rawUrl,
+          outputFolder: TARGET_FOLDER,
+          quality: DOWNLOAD_CONFIG.QUALITY,
+          format: "mp4"
+        });
+
+        if (result && (result.success === true || result.path || result.fileName)) {
+          return {
+            method: "native-yt-dlp",
+            path: result.path || null,
+            fileName: result.fileName || null
+          };
+        }
+      } catch (err) {
+        console.warn("Native yt-dlp failed:", err);
       }
 
-      const invidiousInstances = ["https://inv.tux.pizza", "https://invidious.nerdvpn.de", "https://invidious.privacydev.net"];
-      for (const host of invidiousInstances) {
-        try {
-          const res = await fetch(`${host}/api/v1/videos/${videoId}`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.formatStreams && data.formatStreams.length > 0) {
-              const stream = data.formatStreams.find(s => s.container === "mp4" || (s.type && s.type.includes("video/mp4"))) || data.formatStreams[0];
-              if (stream && stream.url) {
-                return {
-                  streamUrl: stream.url,
-                  title: data.title || "YouTube Short",
-                  channel: data.author ? `@${data.author}` : "@Creator"
-                };
-              }
-            }
-          }
-        } catch (_) {}
+      return null;
+    }
+
+    async function tryPrivateServer(rawUrl) {
+      const base = DOWNLOAD_CONFIG.PRIVATE_SERVER_URL.trim().replace(/\/+$/, "");
+      if (!base) return null;
+
+      try {
+        setDownloadStatus("المحاولة 2/5: السيرفر الخاص...");
+
+        const data = await getJson(`${base}/api/download`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            url: rawUrl,
+            quality: DOWNLOAD_CONFIG.QUALITY
+          })
+        }, 30000);
+
+        const mediaUrl =
+          data?.url ||
+          data?.downloadUrl ||
+          data?.streamUrl ||
+          data?.result?.url ||
+          data?.data?.url;
+
+        if (isUsableMediaUrl(mediaUrl)) {
+          return {
+            method: "private-server",
+            url: mediaUrl
+          };
+        }
+      } catch (err) {
+        console.warn("Private server failed:", err);
       }
-      throw new Error("تعذر جلب ملف الفيديو من السيرفرات الوسيطة حالياً.");
+
+      return null;
+    }
+
+    async function getCobaltInstances() {
+      // The community-maintained instance directory can change.
+      // We only use URLs returned by the directory; no hard-coded
+      // rotating list is required.
+      try {
+        const data = await getJson(
+          "https://instances.cobalt.best/api/instances.json",
+          {},
+          8000
+        );
+
+        if (!Array.isArray(data)) return [];
+
+        return data
+          .filter(x => x && isUsableMediaUrl(String(x.api || x.url || "")))
+          .map(x => String(x.api || x.url).replace(/\/+$/, ""))
+          .slice(0, 8);
+      } catch (_) {
+        return [];
+      }
+    }
+
+    async function tryCobalt(rawUrl) {
+      setDownloadStatus("المحاولة 3/5: Cobalt...");
+
+      // Try the current community instance directory first.
+      const discovered = await getCobaltInstances();
+
+      // Keep the original public endpoint as one explicit fallback.
+      const endpoints = [
+        ...discovered,
+        "https://cobaltapi.getnickel.app"
+      ];
+
+      const unique = [...new Set(endpoints)];
+
+      for (const endpoint of unique) {
+        try {
+          const data = await getJson(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              url: rawUrl,
+              videoQuality: DOWNLOAD_CONFIG.QUALITY,
+              downloadMode: "auto",
+              youtubeVideoCodec: "h264",
+              youtubeVideoContainer: "mp4",
+              filenameStyle: "basic"
+            })
+          }, 10000);
+
+          const mediaUrl = extractMediaUrlFromCobalt(data);
+          if (isUsableMediaUrl(mediaUrl)) {
+            return {
+              method: "cobalt",
+              url: mediaUrl
+            };
+          }
+        } catch (err) {
+          console.warn("Cobalt endpoint failed:", endpoint, err);
+        }
+      }
+
+      return null;
+    }
+
+    async function getOfficialInvidiousInstances() {
+      try {
+        const data = await getJson(
+          "https://api.invidious.io/instances.json",
+          {},
+          8000
+        );
+
+        if (!data || typeof data !== "object") return [];
+
+        return Object.entries(data)
+          .filter(([host, info]) =>
+            info &&
+            info.type === "https" &&
+            !info.monitor &&
+            typeof host === "string"
+          )
+          .map(([host]) => `https://${host}`)
+          .slice(0, 8);
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function extractInvidiousStream(data) {
+      if (!data || typeof data !== "object") return null;
+
+      // Prefer a single-file MP4 because it is easiest to save directly.
+      if (Array.isArray(data.formatStreams)) {
+        const mp4 = data.formatStreams
+          .filter(x => x && x.url && String(x.container).toLowerCase() === "mp4")
+          .sort((a, b) => (b.resolution || "").localeCompare(a.resolution || ""))[0];
+
+        if (mp4 && isUsableMediaUrl(mp4.url)) return mp4.url;
+      }
+
+      // Some instances expose adaptive formats. Prefer MP4 video with
+      // audio already included when available.
+      if (Array.isArray(data.adaptiveFormats)) {
+        const combined = data.adaptiveFormats.find(x =>
+          x && x.url &&
+          String(x.type || "").includes("video/mp4") &&
+          String(x.type || "").includes("audio")
+        );
+
+        if (combined && isUsableMediaUrl(combined.url)) return combined.url;
+      }
+
+      return null;
+    }
+
+    async function tryInvidious(videoId) {
+      setDownloadStatus("المحاولة 4/5: Invidious...");
+
+      const instances = await getOfficialInvidiousInstances();
+
+      for (const base of [...instances, ...DOWNLOAD_CONFIG.FALLBACK_INVIDIOUS]) {
+        try {
+          const data = await getJson(
+            `${base.replace(/\/+$/, "")}/api/v1/videos/${encodeURIComponent(videoId)}`,
+            {},
+            9000
+          );
+
+          const mediaUrl = extractInvidiousStream(data);
+          if (isUsableMediaUrl(mediaUrl)) {
+            return {
+              method: "invidious",
+              url: mediaUrl
+            };
+          }
+        } catch (err) {
+          console.warn("Invidious failed:", base, err);
+        }
+      }
+
+      return null;
+    }
+
+    async function tryAllDownloadMethods(rawUrl, videoId) {
+      // 1) Native yt-dlp
+      const nativeResult = await tryNativeYtDlp(rawUrl);
+      if (nativeResult) return nativeResult;
+
+      // 2) Home/private server
+      const privateResult = await tryPrivateServer(rawUrl);
+      if (privateResult) return privateResult;
+
+      // 3) Cobalt
+      const cobaltResult = await tryCobalt(rawUrl);
+      if (cobaltResult) return cobaltResult;
+
+      // 4) Invidious
+      const invidiousResult = await tryInvidious(videoId);
+      if (invidiousResult) return invidiousResult;
+
+      // Nothing produced a downloadable URL.
+      return null;
+    }
+
+    async function saveDirectMediaUrl(mediaUrl, preferredExtension = "mp4") {
+      if (!window.Capacitor || !window.Capacitor.Plugins.Filesystem) {
+        throw new Error("Capacitor Filesystem is not available");
+      }
+
+      const { Filesystem, Directory } = window.Capacitor.Plugins;
+      const fileName = `short_${Date.now()}.${preferredExtension}`;
+
+      await Filesystem.downloadFile({
+        url: mediaUrl,
+        path: `${TARGET_FOLDER}/${fileName}`,
+        directory: Directory.Documents
+      });
+
+      return fileName;
     }
 
     async function handleProcessLink() {
       const input = document.getElementById("videoUrlInput");
       const btn = document.getElementById("downloadBtn");
       const url = input.value.trim();
-      if (!url) return;
+
+      if (!url) {
+        alert("ألصق رابط الفيديو أولاً.");
+        return;
+      }
 
       btn.disabled = true;
-      btn.innerText = "جاري استخراج الرابط المباشر...";
 
       try {
-        let streamUrl = url;
-        let title = "فيديو محفوظ";
-        let channel = "@LocalVideo";
-
         const ytId = extractYouTubeId(url);
-        if (ytId) {
-          const resolved = await resolveDirectStream(url, ytId);
-          streamUrl = resolved.streamUrl;
-          title = resolved.title;
-          channel = resolved.channel;
+
+        // ======================================================
+        // الحالة A: رابط ملف مباشر (MP4/WebM/MOV...)
+        // ======================================================
+        if (!ytId) {
+          setDownloadStatus("تنزيل ملف مباشر...");
+
+          if (window.Capacitor && window.Capacitor.Plugins.Filesystem) {
+            await saveDirectMediaUrl(url, "mp4");
+            alert("تم تنزيل الفيديو وحفظه في الهاتف.");
+            input.value = "";
+            closeModal();
+            await loadCombinedFeed();
+            return;
+          }
+
+          throw new Error("Direct download requires the APK");
         }
 
-        btn.innerText = "جاري الحفظ في مجلد الهاتف...";
+        // ======================================================
+        // الحالة B: YouTube
+        // ======================================================
+        const result = await tryAllDownloadMethods(url, ytId);
 
-        if (window.Capacitor && window.Capacitor.Plugins.Filesystem) {
-          const { Filesystem, Directory } = window.Capacitor.Plugins;
-          const fileName = `short_${Date.now()}.mp4`;
-          const filePath = `${TARGET_FOLDER}/${fileName}`;
-
-          await Filesystem.downloadFile({
-            url: streamUrl,
-            path: filePath,
-            directory: Directory.Documents,
-            progress: true
+        if (result?.method === "native-yt-dlp") {
+          alert("تم تنزيل الفيديو مباشرة داخل الهاتف باستخدام yt-dlp.");
+        } else if (result?.url) {
+          setDownloadStatus("تم العثور على الفيديو، جاري الحفظ...");
+          await saveDirectMediaUrl(result.url, "mp4");
+          alert(`تم تنزيل الفيديو بنجاح عبر ${result.method}.`);
+        } else {
+          // ====================================================
+          // الحالة الأخيرة: لا يوجد مسار تنزيل متاح
+          // لا نفشل تمامًا: نحفظ الرابط للمشاهدة داخل التطبيق.
+          // ====================================================
+          setDownloadStatus("المحاولة 5/5: تشغيل YouTube...");
+          saveYouTubeLinkLocally({
+            id: ytId,
+            type: 'youtube',
+            src: ytId,
+            title: 'YouTube Short',
+            channel: '@Shorts'
           });
 
-          alert("تم حفظ الفيديو بنجاح في مجلد الهاتف!");
-          input.value = "";
-          closeModal();
-          await loadLocalShorts();
-        } else {
-          alert("التنزيل في المجلدات متاح بعد تثبيت تطبيق الـ APK على الهاتف.");
+          alert(
+            "لم تنجح مسارات التنزيل المتاحة حاليًا، لذلك تم حفظ الرابط للمشاهدة داخل التطبيق."
+          );
         }
+
+        input.value = "";
+        closeModal();
+        await loadCombinedFeed();
+
       } catch (err) {
-        alert("خطأ: " + (err.message || "حدث خطأ أثناء التنزيل."));
+        console.error("Download failed:", err);
+        alert(
+          "فشلت جميع طرق التنزيل المتاحة. إذا كنت تستخدم APK، تأكد من وجود Capacitor Filesystem، " +
+          "وإذا أردت yt-dlp داخل الهاتف فيجب إضافة Native Plugin الخاص به."
+        );
       } finally {
         btn.disabled = false;
-        btn.innerText = "تنزيل وحفظ في المجلد";
+        btn.innerText = "حفظ وتشغيل فوري";
       }
     }
 
-    async function loadLocalShorts() {
-      if (!window.Capacitor || !window.Capacitor.Plugins.Filesystem) return;
-      const { Filesystem, Directory } = window.Capacitor.Plugins;
+    function saveYouTubeLinkLocally(item) {
+      const list = JSON.parse(localStorage.getItem(YT_STORAGE_KEY)) || [];
+      if (!list.some(x => x.src === item.src)) {
+        list.unshift(item);
+        localStorage.setItem(YT_STORAGE_KEY, JSON.stringify(list));
+      }
+    }
 
-      try {
-        const result = await Filesystem.readdir({
-          path: TARGET_FOLDER,
-          directory: Directory.Documents
-        });
+    // ==========================================================
+    // 5. دمج الفيديوهات المحفوظة محلياً والمدرجة في خلاصة واحدة
+    // ==========================================================
+    async function loadCombinedFeed() {
+      const combined = [];
 
-        const loadedList = [];
-        if (result.files && result.files.length > 0) {
-          for (const file of result.files) {
-            const name = typeof file === 'string' ? file : file.name;
-            if (name && name.endsWith('.mp4')) {
-              const fileUri = await Filesystem.getUri({
-                path: `${TARGET_FOLDER}/${name}`,
-                directory: Directory.Documents
-              });
-              const localSrc = window.Capacitor.convertFileSrc(fileUri.uri);
-              loadedList.push({
-                id: name,
-                src: localSrc,
-                title: name.replace('.mp4', ''),
-                channel: '@محفوظ_في_الهاتف'
-              });
+      // 1. قراءة الفيديوهات المخزنة في مجلد الهاتف
+      if (window.Capacitor && window.Capacitor.Plugins.Filesystem) {
+        const { Filesystem, Directory } = window.Capacitor.Plugins;
+        try {
+          const result = await Filesystem.readdir({
+            path: TARGET_FOLDER,
+            directory: Directory.Documents
+          });
+
+          if (result.files && result.files.length > 0) {
+            for (const file of result.files) {
+              const name = typeof file === 'string' ? file : file.name;
+              if (name && name.endsWith('.mp4')) {
+                const fileUri = await Filesystem.getUri({
+                  path: `${TARGET_FOLDER}/${name}`,
+                  directory: Directory.Documents
+                });
+                combined.push({
+                  id: name,
+                  type: 'local',
+                  src: window.Capacitor.convertFileSrc(fileUri.uri),
+                  title: name.replace('.mp4', ''),
+                  channel: '@محفوظ_في_الهاتف'
+                });
+              }
             }
           }
-        }
+        } catch (_) {}
+      }
 
-        if (loadedList.length > 0) {
-          virtualizer.setVideos(loadedList);
-        }
-      } catch (_) {}
+      // 2. قراءة الفيديوهات المدرجة عبر يوتيوب
+      const ytList = JSON.parse(localStorage.getItem(YT_STORAGE_KEY)) || [];
+      ytList.forEach(item => combined.push(item));
+
+      const placeholder = document.getElementById("placeholder");
+      if (combined.length > 0) {
+        if (placeholder) placeholder.style.display = "none";
+        virtualizer.setVideos(combined);
+      } else {
+        if (placeholder) placeholder.style.display = "flex";
+      }
     }
 
     function openModal() {
