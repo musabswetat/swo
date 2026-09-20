@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>YouTube Shorts</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, sans-serif;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      overflow: hidden;
+    }
+
+    /* الحاوية الرئيسية للتمرير العمودي السلس */
+    .shorts-container {
+      width: 100vw;
+      height: 100dvh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      scrollbar-width: none;
+    }
+    .shorts-container::-webkit-scrollbar { display: none; }
+
+    /* شريحة الفيديو الفردية */
+    .short-card {
+      width: 100vw;
+      height: 100dvh;
+      position: relative;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #000;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      pointer-events: auto;
+    }
+
+    /* الشريط العلوي */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 16px;
+      z-index: 100;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+      pointer-events: none;
+    }
+    .top-bar * { pointer-events: auto; }
+
+    .shorts-logo {
+      color: #fff;
+      font-size: 20px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .top-icons {
+      display: flex;
+      gap: 16px;
+      color: #fff;
+    }
+    .top-icons svg {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+    }
+
+    /* تدرج ظلي سفلي للنصوص */
+    .overlay-gradient {
+      position: absolute;
+      bottom: 52px;
+      left: 0;
+      right: 0;
+      height: 180px;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* شريط الأزرار الجانبي الأيمن */
+    .action-bar {
+      position: absolute;
+      right: 12px;
+      bottom: 70px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      z-index: 20;
+    }
+
+    .action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .action-btn svg {
+      width: 28px;
+      height: 28px;
+      fill: #fff;
+    }
+
+    .action-btn span {
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .action-btn.liked svg {
+      fill: #ff0000;
+    }
+
+    /* بيانات القناة والعنوان */
+    .meta-content {
+      position: absolute;
+      left: 14px;
+      right: 80px;
+      bottom: 65px;
+      color: #fff;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .channel-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+    }
+
+    .channel-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #444;
+    }
+
+    .channel-name {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .subscribe-btn {
+      background: #fff;
+      color: #000;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 16px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .video-title {
+      font-size: 13px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* شريط التقدم السفلي */
+    .progress-bar-container {
+      position: absolute;
+      bottom: 52px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: rgba(255,255,255,0.2);
+      z-index: 30;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: #ff0000;
+      width: 0%;
+    }
+
+    /* شريط التنقل السفلي */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      background: #000;
+      border-top: 1px solid #222;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #aaa;
+      font-size: 10px;
+      background: none;
+      border: none;
+    }
+
+    .nav-item.active { color: #fff; }
+    .nav-item svg { width: 22px; height: 22px; fill: currentColor; margin-bottom: 2px; }
+
+    /* النافذة السفلية المنبثقة */
+    .modal-sheet {
+      position: fixed;
+      bottom: -100%;
+      left: 0;
+      right: 0;
+      background: #212121;
+      border-radius: 16px 16px 0 0;
+      padding: 20px 16px;
+      z-index: 200;
+      transition: bottom 0.3s ease-out;
+    }
+
+    .modal-sheet.open { bottom: 0; }
+
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 150;
+      display: none;
+    }
+
+    .sheet-overlay.active { display: block; }
+
+    .input-box {
+      width: 100%;
+      background: #121212;
+      border: 1px solid #383838;
+      border-radius: 8px;
+      padding: 12px;
+      color: #fff;
+      font-size: 13px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+
+    .action-modal-btn {
+      width: 100%;
+      background: #fff;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+
+    .file-btn {
+      background: #2f2f2f;
+      color: #fff;
+      border: 1px dashed #555;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="shorts-logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#ff0000"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L22 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73z"/></svg>
+      Shorts
+    </div>
+    <div class="top-icons">
+      <svg onclick="openModal()" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+    </div>
+  </div>
+
+  <div class="shorts-container" id="shortsContainer"></div>
+
+  <div class="bottom-nav">
+    <button class="nav-item"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>الرئيسية</button>
+    <button class="nav-item active"><svg viewBox="0 0 24 24"><path d="M10 14.65v-5.3L15 12l-5 2.65zm7.77-4.33L18 8.87a3.54 3.54 0 0 0-4.85-1.23L7.7 10.7a3.53 3.53 0 0 0-1.84 3.07c0 1.3.7 2.47 1.84 3.07l5.45-3.07a3.53 3.53 0 0 0 1.84-3.07z"/></svg>Shorts</button>
+    <button class="nav-item" onclick="openModal()"><svg style="width:34px;height:34px" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg></button>
+    <button class="nav-item"><svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>الاشتراكات</button>
+  </div>
+
+  <div class="sheet-overlay" id="overlay" onclick="closeModal()"></div>
+  <div class="modal-sheet" id="modalSheet">
+    <div style="color:#fff;font-weight:bold;margin-bottom:12px;text-align:center;">إضافة فيديو شورتس</div>
+    <input type="text" id="videoUrlInput" class="input-box" placeholder="الصق رابط يوتيوب أو رابط MP4...">
+    <button class="action-modal-btn" onclick="handleAddLink()">عرض الرابط فوراً</button>
+    <input type="file" id="localFileInput" accept="video/*" style="display:none" onchange="handleLocalFile(event)">
+    <button class="action-modal-btn file-btn" onclick="document.getElementById('localFileInput').click()">📁 أو اختر فيديو من ذاكرة الهاتف لحفظه محلياً</button>
+  </div>
+
+  <script>
+    // --- 1. إدارة التخزين المحلي IndexedDB ---
+    let db;
+    const req = indexedDB.open("ShortsAppDB", 2);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains("items")) {
+        d.createObjectStore("items", { keyPath: "id", autoIncrement: true });
+      }
+    };
+    req.onsuccess = (e) => {
+      db = e.target.result;
+      loadAll();
+    };
+
+    function saveItem(item) {
+      return new Promise((res) => {
+        const tx = db.transaction("items", "readwrite");
+        tx.objectStore("items").add(item);
+        tx.oncomplete = () => res();
+      });
+    }
+
+    function getAllItems() {
+      return new Promise((res) => {
+        const tx = db.transaction("items", "readonly");
+        const r = tx.objectStore("items").getAll();
+        r.onsuccess = () => res(r.result || []);
+      });
+    }
+
+    // --- 2. معالجة الروابط واستخراج معرّف يوتيوب ---
+    function extractYouTubeId(url) {
+      const match = url.match(/(?:shorts\/|v=|youtu\.be\/|\/v\/|embed\/)([a-zA-Z0-9_-]{11})/);
+      return match ? match[1] : null;
+    }
+
+    async function handleAddLink() {
+      const input = document.getElementById("videoUrlInput");
+      const url = input.value.trim();
+      if (!url) return;
+
+      const ytId = extractYouTubeId(url);
+
+      if (ytId) {
+        // إذا كان رابط يوتيوب: تضمين فوري بدون مشاكل CORS
+        const item = { type: 'youtube', src: ytId, title: 'YouTube Short', channel: '@YouTube_Creator' };
+        await saveItem(item);
+        renderShort(item);
+        input.value = "";
+        closeModal();
+      } else if (url.endsWith('.mp4') || url.includes('.mp4?')) {
+        // إذا كان رابط MP4 مباشر: تنزيله وتخزينه كـ Blob
+        try {
+          const res = await fetch(url);
+          const blob = await res.blob();
+          const item = { type: 'blob', blob: blob, title: 'فيديو مباشر محفوظ', channel: '@Local_Channel' };
+          await saveItem(item);
+          renderShort(item);
+          input.value = "";
+          closeModal();
+        } catch(e) {
+          alert("الرابط المباشر محمي من قبل خادمه أو لا يدعم التحميل المباشر.");
+        }
+      } else {
+        alert("يرجى وضع رابط YouTube Shorts صالح أو اختيار فيديو من ذاكرة هاتفك.");
+      }
+    }
+
+    // اختيار ملف من ذاكرة الهاتف وحفظه في التطبيق محلياً
+    async function handleLocalFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const item = {
+        type: 'blob',
+        blob: file,
+        title: file.name.replace(/\.[^/.]+$/, ""),
+        channel: '@MyPhone_Storage'
+      };
+
+      await saveItem(item);
+      renderShort(item);
+      closeModal();
+    }
+
+    // --- 3. بناء واجهة العرض بالملي ---
+    const container = document.getElementById("shortsContainer");
+
+    function renderShort(item) {
+      const card = document.createElement("div");
+      card.className = "short-card";
+
+      let mediaHtml = '';
+      if (item.type === 'youtube') {
+        mediaHtml = `<iframe src="https://www.youtube.com/embed/${item.src}?autoplay=1&loop=1&playlist=${item.src}&controls=0&rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      } else {
+        const localUrl = URL.createObjectURL(item.blob);
+        mediaHtml = `<video src="${localUrl}" loop playsinline preload="metadata"></video>`;
+      }
+
+      card.innerHTML = `
+        ${mediaHtml}
+        <div class="overlay-gradient"></div>
+        <div class="action-bar">
+          <button class="action-btn" onclick="this.classList.toggle('liked')">
+            <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+            <span>إعجاب</span>
+          </button>
+          <button class="action-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.58-6.59c.37-.36.59-.86.59-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg>
+            <span>Dislike</span>
+          </button>
+          <button class="action-btn">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            <span>تعليق</span>
+          </button>
+          <button class="action-btn">
+            <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/></svg>
+            <span>مشاركة</span>
+          </button>
+        </div>
+        <div class="meta-content">
+          <div class="channel-row">
+            <div class="channel-avatar"></div>
+            <span class="channel-name">${item.channel}</span>
+            <button class="subscribe-btn">اشتراك</button>
+          </div>
+          <div class="video-title">${item.title}</div>
+        </div>
+        <div class="progress-bar-container"><div class="progress-bar-fill"></div></div>
+      `;
+
+      container.appendChild(card);
+      observer.observe(card);
+    }
+
+    // تشغيل وإيقاف الفيديو عند التمرير
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        const vid = e.target.querySelector("video");
+        if (vid) {
+          if (e.isIntersecting) vid.play().catch(() => {});
+          else { vid.pause(); vid.currentTime = 0; }
+        }
+      });
+    }, { threshold: 0.75 });
+
+    async function loadAll() {
+      const items = await getAllItems();
+      items.forEach(renderShort);
+    }
+
+    function openModal() {
+      document.getElementById("overlay").classList.add("active");
+      document.getElementById("modalSheet").classList.add("open");
+    }
+
+    function closeModal() {
+      document.getElementById("overlay").classList.remove("active");
+      document.getElementById("modalSheet").classList.remove("open");
+    }
+  </script>
+</body>
+</html>
