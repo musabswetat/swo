@@ -2,5 +2,11 @@
   "appId": "com.shorts.app",
   "appName": "Shorts",
   "webDir": "www",
-  "bundledWebRuntime": false
+  "bundledWebRuntime": false,
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": true,
+      "style": "DARK"
+    }
+  }
 }
