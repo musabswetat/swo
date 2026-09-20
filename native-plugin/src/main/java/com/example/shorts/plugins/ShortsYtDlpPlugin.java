@@ -110,7 +110,7 @@ public class ShortsYtDlpPlugin extends Plugin {
                 call.resolve(out);
             } catch (Throwable t) {
                 Log.e(TAG, "download failed", t);
-                call.reject(messageOf(t), t);
+                call.reject(messageOf(t));
             } finally {
                 busy.set(false);
             }
@@ -119,7 +119,6 @@ public class ShortsYtDlpPlugin extends Plugin {
 
     @PluginMethod
     public void cancel(PluginCall call) {
-        // النسخة الحالية من API لا تعرض دالة إلغاء عامة موثقة؛ نمنع بدء عملية جديدة.
         cancelRequested = true;
         call.resolve(new JSObject().put("accepted", true));
     }
@@ -127,7 +126,6 @@ public class ShortsYtDlpPlugin extends Plugin {
     private void executeReflectively(Object request, File dir, PluginCall call) throws Exception {
         Class<?> ytDlp = findClass("YtDlp", "YoutubeDL");
 
-        // المسار الموثق حاليًا: executeAsync(request, callback)
         Method async = null;
         for (Method m : ytDlp.getMethods()) {
             if (m.getName().equals("executeAsync") && m.getParameterTypes().length == 2
@@ -174,12 +172,10 @@ public class ShortsYtDlpPlugin extends Plugin {
                     lock.wait(500L);
                 }
             }
-            // إعطاء الدمج النهائي للملف وقتًا قصيرًا.
             Thread.sleep(700L);
             return;
         }
 
-        // توافق احتياطي إن كان الإصدار يحتوي execute(request).
         for (Method m : ytDlp.getMethods()) {
             if (m.getName().equals("execute") && m.getParameterTypes().length == 1
                     && m.getParameterTypes()[0].isAssignableFrom(request.getClass())) {
