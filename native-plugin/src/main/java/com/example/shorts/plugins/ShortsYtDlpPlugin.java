@@ -17,15 +17,12 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,7 +49,7 @@ public class ShortsYtDlpPlugin extends Plugin {
     @PluginMethod
     public void isAvailable(PluginCall call) {
         try {
-            findClass("YtDlp");
+            findClass("YtDlp", "YoutubeDL");
             call.resolve(new JSObject().put("available", true));
         } catch (Throwable t) {
             call.resolve(new JSObject().put("available", false).put("message", t.toString()));
@@ -98,7 +95,6 @@ public class ShortsYtDlpPlugin extends Plugin {
                 File result = findNewestVideo(dir);
                 if (result == null) throw new Exception("yt-dlp finished without a video file");
 
-                // نسخ إلى MediaStore حتى يظهر في تطبيقات الهاتف/المعرض.
                 Uri publicUri = publishToMediaStore(result);
 
                 JSObject out = new JSObject();
@@ -106,7 +102,7 @@ public class ShortsYtDlpPlugin extends Plugin {
                 out.put("fileName", result.getName());
                 out.put("filePath", result.getAbsolutePath());
                 if (publicUri != null) out.put("uri", publicUri.toString());
-                out.put("engine", "yt-dlp-android-2.0.2");
+                out.put("engine", "youtubedl-android");
                 call.resolve(out);
             } catch (Throwable t) {
                 Log.e(TAG, "download failed", t);
@@ -195,21 +191,30 @@ public class ShortsYtDlpPlugin extends Plugin {
 
     private void invokeStaticInit() throws Exception {
         Class<?> cls = findClass("YtDlp", "YoutubeDL");
-        Method init = null;
+        
+        // التحقق إن كان الكلاس يعتمد نمط Singleton مثل yausername
+        try {
+            Method getInstance = cls.getMethod("getInstance");
+            Object instance = getInstance.invoke(null);
+            Method init = cls.getMethod("init", Context.class);
+            init.invoke(instance, getContext().getApplicationContext());
+            return;
+        } catch (NoSuchMethodException ignored) {}
+
+        // أو استدعاء ثابت
         for (Method m : cls.getMethods()) {
             if (m.getName().equals("init") && m.getParameterTypes().length == 1) {
-                init = m;
-                break;
+                m.invoke(null, getContext().getApplicationContext());
+                return;
             }
         }
-        if (init != null) init.invoke(null, getContext());
     }
 
     private Class<?> findClass(String... simpleNames) throws ClassNotFoundException {
         String[] packages = new String[]{
+                "com.yausername.youtubedl_android.",
                 "dev.ffmpegkit.ytdlp.",
-                "dev.ffmpegkit_maintained.ytdlp.",
-                "com.yausername.youtubedl_android."
+                "dev.ffmpegkit_maintained.ytdlp."
         };
         for (String p : packages) {
             for (String n : simpleNames) {
