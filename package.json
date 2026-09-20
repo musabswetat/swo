@@ -1,0 +1,13 @@
+{
+  "name": "shorts-app",
+  "version": "1.0.0",
+  "description": "YouTube Shorts Clone APK",
+  "scripts": {
+    "build": "echo 'Assets ready in www/'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  }
+}
