@@ -19,21 +19,21 @@ jobs:
           distribution: 'zulu'
           java-version: '21'
 
-      # Capacitor 8 requires Node.js 22 or newer
       - name: Set up Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
 
-      - name: Check tool versions
+      - name: Check Node.js
         run: |
           node --version
           npm --version
-          npx cap --version
 
       - name: Install Dependencies
         run: npm install
+
+      - name: Check Capacitor CLI
+        run: npx cap --version
 
       - name: Add Android Platform
         run: npx cap add android
