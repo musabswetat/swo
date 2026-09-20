@@ -115,13 +115,13 @@ jobs:
           ./gradlew clean --no-daemon
 
       # ==============================
-      # 13. بناء APK
+      # 13. بناء APK (بدون stacktrace لإظهار الخطأ المباشر)
       # ==============================
       - name: Build Debug APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon
 
       # ==============================
       # 14. رفع APK
