@@ -22,7 +22,7 @@
       overflow: hidden;
     }
 
-    /* حاوية العرض بملء الشاشة مع التمرير الصارم */
+    /* حاوية العرض والتمرير الرأسي الصارم */
     .shorts-container {
       width: 100vw;
       height: 100vh;
@@ -33,6 +33,7 @@
     }
     .shorts-container::-webkit-scrollbar { display: none; }
 
+    /* الشريحة الفردية */
     .short-card {
       width: 100vw;
       height: 100vh;
@@ -46,10 +47,26 @@
       background: #000;
     }
 
+    .video-wrapper {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
     video {
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
     }
 
     /* الشريط العلوي */
@@ -78,18 +95,19 @@
       gap: 6px;
     }
 
-    /* تدرج ظلي سفلي لحماية النصوص */
+    /* تدرج ظلي سفلي للنصوص */
     .overlay-gradient {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 240px;
-      background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+      height: 250px;
+      background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
       pointer-events: none;
+      z-index: 10;
     }
 
-    /* شريط الأزرار التفاعلية الأيمن */
+    /* شريط الأزرار التفاعلي الجانبي */
     .action-bar {
       position: absolute;
       right: 12px;
@@ -115,15 +133,34 @@
       width: 28px;
       height: 28px;
       fill: #fff;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
     }
 
     .action-btn span {
       font-size: 11px;
       margin-top: 4px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
     }
 
     .action-btn.liked svg {
       fill: #ff0000;
+    }
+
+    .sound-disk {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: #111;
+      border: 2px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: rotateDisk 4s linear infinite;
+    }
+
+    @keyframes rotateDisk {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     /* بيانات القناة والعنوان */
@@ -224,7 +261,38 @@
     .nav-item.active { color: #fff; }
     .nav-item svg { width: 22px; height: 22px; fill: currentColor; margin-bottom: 2px; }
 
-    /* النافذة السفلية المنبثقة */
+    /* حركة القلب النابض عند النقر المزدوج */
+    .heart-pop-container {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    .pop-heart {
+      width: 95px;
+      height: 95px;
+      animation: heartAnim 0.75s ease-out forwards;
+    }
+
+    .pop-heart svg {
+      width: 100%;
+      height: 100%;
+      fill: #ff0000;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.7));
+    }
+
+    @keyframes heartAnim {
+      0% { transform: scale(0.2); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      80% { transform: scale(0.95); opacity: 0.9; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    /* النافذة السفلية المنبثقة للتنزيل */
     .modal-sheet {
       position: fixed;
       bottom: -100%;
@@ -270,7 +338,6 @@
       padding: 12px;
       border-radius: 8px;
       cursor: pointer;
-      margin-bottom: 8px;
     }
 
     .empty-placeholder {
@@ -289,7 +356,7 @@
 
   <div class="top-bar">
     <div class="shorts-logo">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="#ff0000"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L22 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73z"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#ff0000"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg>
       Shorts
     </div>
     <div style="color:#fff; cursor:pointer;" onclick="openModal()">
@@ -299,8 +366,8 @@
 
   <div class="shorts-container" id="shortsContainer">
     <div class="empty-placeholder" id="placeholder">
-      <p style="font-size: 16px; color: #aaa; margin-bottom: 12px;">لا توجد مقاطع محفوظة حتى الآن</p>
-      <p style="font-size: 12px;">اضغط على زر (+) لإضافة رابط يوتيوب وتنزيله في الهاتف</p>
+      <p style="font-size: 16px; color: #aaa; margin-bottom: 12px;">لا توجد مقاطع حتى الآن</p>
+      <p style="font-size: 12px;">اضغط على زر (+) لإضافة وحفظ مقاطع Shorts في الهاتف</p>
     </div>
   </div>
 
@@ -321,7 +388,272 @@
   <script>
     const TARGET_FOLDER = 'ShortsVideos';
 
-    // --- 1. إعداد وضع الشاشة الكاملة والصلاحيات ---
+    // ==========================================================
+    // 1. خوارزمية الترتيب واحتساب سلوك المشاهدة (Algorithm)
+    // ==========================================================
+    class ShortsAlgorithm {
+      constructor() {
+        this.key = "shorts_algorithm_scores_v1";
+        this.scores = JSON.parse(localStorage.getItem(this.key)) || {};
+      }
+
+      getScore(id) {
+        return this.scores[id] || 100;
+      }
+
+      onFinishWatch(id, watchTime, totalDuration, loopCount) {
+        let score = this.getScore(id);
+        if (watchTime < 2.0 && loopCount === 0) {
+          // عقوبة التخطي السريع
+          score = Math.max(10, score - 40);
+        } else if ((watchTime / totalDuration) >= 0.85 || loopCount > 0) {
+          // مكافأة إكمال المقطع والتكرار
+          score += 50 + (loopCount * 30);
+        }
+        this.scores[id] = score;
+        this.save();
+      }
+
+      onLike(id, isLiked) {
+        let score = this.getScore(id);
+        score += isLiked ? 35 : -35;
+        this.scores[id] = score;
+        this.save();
+      }
+
+      rank(list) {
+        return [...list].sort((a, b) => {
+          if (Math.random() < 0.20) return 0.5 - Math.random(); // نسبة استكشاف عشوائية
+          return this.getScore(b.id) - this.getScore(a.id);
+        });
+      }
+
+      save() {
+        localStorage.setItem(this.key, JSON.stringify(this.scores));
+      }
+    }
+
+    const algo = new ShortsAlgorithm();
+
+    // ==========================================================
+    // 2. مدير تدوير المشغلات والذاكرة (Sliding Window Virtualizer)
+    // ==========================================================
+    class FeedVirtualizer {
+      constructor(container, onActiveChange) {
+        this.container = container;
+        this.onActiveChange = onActiveChange;
+        this.videos = [];
+        this.cardElements = [];
+        this.currentIndex = -1;
+        this.activeWatchStart = 0;
+        this.loopCounter = 0;
+
+        this.setupObserver();
+      }
+
+      setVideos(videoList) {
+        this.videos = algo.rank(videoList);
+        this.container.innerHTML = "";
+        this.cardElements = [];
+
+        if (this.videos.length === 0) return;
+
+        this.videos.forEach((item, index) => {
+          const card = document.createElement("div");
+          card.className = "short-card";
+          card.dataset.index = index;
+
+          card.innerHTML = `
+            <div class="video-wrapper" id="wrap-${index}"></div>
+            <div class="overlay-gradient"></div>
+            <div class="heart-pop-container"></div>
+            <div class="action-bar">
+              <button class="action-btn like-btn" onclick="handleLikeClick(event, ${index})">
+                <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+                <span>إعجاب</span>
+              </button>
+              <button class="action-btn">
+                <svg viewBox="0 0 24 24"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.58-6.59c.37-.36.59-.86.59-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg>
+                <span>Dislike</span>
+              </button>
+              <button class="action-btn">
+                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                <span>تعليق</span>
+              </button>
+              <button class="action-btn">
+                <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92z"/></svg>
+                <span>مشاركة</span>
+              </button>
+              <div class="sound-disk">
+                <svg width="16" height="16" fill="#fff" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+              </div>
+            </div>
+            <div class="meta-content">
+              <div class="channel-row">
+                <div class="channel-avatar"></div>
+                <span class="channel-name">${item.channel}</span>
+                <button class="subscribe-btn">اشتراك</button>
+              </div>
+              <div class="video-title">${item.title}</div>
+            </div>
+            <div class="progress-bar-container"><div class="progress-bar-fill"></div></div>
+          `;
+
+          this.attachInteractions(card, index);
+          this.container.appendChild(card);
+          this.cardElements.push(card);
+          this.observer.observe(card);
+        });
+
+        this.updateActiveWindow(0);
+      }
+
+      setupObserver() {
+        this.observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const idx = parseInt(entry.target.dataset.index);
+              this.updateActiveWindow(idx);
+            }
+          });
+        }, { threshold: 0.6 });
+      }
+
+      updateActiveWindow(newIndex) {
+        if (newIndex === this.currentIndex) return;
+
+        // تسجيل سلوك المشاهدة للفيديو السابق بالخوارزمية
+        if (this.currentIndex >= 0 && this.videos[this.currentIndex]) {
+          const prevVideo = this.videos[this.currentIndex];
+          const prevCard = this.cardElements[this.currentIndex];
+          const prevVid = prevCard ? prevCard.querySelector("video") : null;
+          const duration = prevVid && prevVid.duration ? prevVid.duration : 15;
+          const watchedTime = (Date.now() - this.activeWatchStart) / 1000;
+          algo.onFinishWatch(prevVideo.id, watchedTime, duration, this.loopCounter);
+        }
+
+        this.currentIndex = newIndex;
+        this.activeWatchStart = Date.now();
+        this.loopCounter = 0;
+
+        const activeRange = new Set([newIndex - 1, newIndex, newIndex + 1]);
+
+        // تدوير المشغلات وحذف البعيدة لتفريغ الذاكرة
+        this.cardElements.forEach((card, idx) => {
+          const wrapper = card.querySelector(".video-wrapper");
+          if (activeRange.has(idx)) {
+            if (!wrapper.hasChildNodes()) {
+              this.attachVideoElement(wrapper, this.videos[idx], idx);
+            }
+            const vid = wrapper.querySelector("video");
+            if (vid) {
+              if (idx === newIndex) {
+                vid.currentTime = 0;
+                vid.play().catch(() => {});
+              } else {
+                vid.pause();
+                vid.currentTime = 0;
+              }
+            }
+          } else {
+            // تفريغ فوري لمشغل الفيديو وتحرير الرام
+            const vid = wrapper.querySelector("video");
+            if (vid) {
+              vid.pause();
+              vid.removeAttribute("src");
+              vid.load();
+            }
+            wrapper.innerHTML = "";
+          }
+        });
+      }
+
+      attachVideoElement(wrapper, item, index) {
+        if (item.type === 'youtube') {
+          wrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${item.src}?autoplay=1&loop=1&playlist=${item.src}&controls=0" allow="autoplay" allowfullscreen></iframe>`;
+        } else {
+          const vid = document.createElement("video");
+          vid.src = item.src;
+          vid.loop = true;
+          vid.playsInline = true;
+          vid.preload = (index === this.currentIndex) ? "auto" : "metadata";
+
+          vid.addEventListener("timeupdate", () => {
+            const card = this.cardElements[index];
+            if (!card) return;
+            const fill = card.querySelector(".progress-bar-fill");
+            if (vid.duration && fill) {
+              fill.style.width = `${(vid.currentTime / vid.duration) * 100}%`;
+            }
+          });
+
+          vid.addEventListener("ended", () => {
+            if (index === this.currentIndex) this.loopCounter += 1;
+          });
+
+          wrapper.appendChild(vid);
+        }
+      }
+
+      attachInteractions(card, index) {
+        let lastTap = 0;
+        let holdTimer = null;
+
+        // الضغط المطول للإيقاف المؤقت
+        card.addEventListener("touchstart", (e) => {
+          if (e.target.closest(".action-bar") || e.target.closest(".meta-content")) return;
+          holdTimer = setTimeout(() => {
+            const vid = card.querySelector("video");
+            if (vid && !vid.paused) vid.pause();
+          }, 250);
+        });
+
+        card.addEventListener("touchend", () => {
+          clearTimeout(holdTimer);
+          const vid = card.querySelector("video");
+          if (vid && vid.paused && parseInt(card.dataset.index) === this.currentIndex) {
+            vid.play().catch(() => {});
+          }
+        });
+
+        // النقر المزدوج لإظهار القلب والإعجاب
+        card.addEventListener("click", (e) => {
+          if (e.target.closest(".action-bar") || e.target.closest(".meta-content")) return;
+          const now = Date.now();
+          if (now - lastTap < 300) {
+            this.showHeartAnimation(card);
+            const btn = card.querySelector(".like-btn");
+            if (btn && !btn.classList.contains("liked")) {
+              btn.classList.add("liked");
+              algo.onLike(this.videos[index].id, true);
+            }
+          }
+          lastTap = now;
+        });
+      }
+
+      showHeartAnimation(card) {
+        const container = card.querySelector(".heart-pop-container");
+        const heart = document.createElement("div");
+        heart.className = "pop-heart";
+        heart.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+        container.appendChild(heart);
+        setTimeout(() => heart.remove(), 750);
+      }
+    }
+
+    const virtualizer = new FeedVirtualizer(document.getElementById("shortsContainer"));
+
+    function handleLikeClick(e, index) {
+      e.stopPropagation();
+      const btn = e.currentTarget;
+      const isLiked = btn.classList.toggle("liked");
+      algo.onLike(virtualizer.videos[index].id, isLiked);
+    }
+
+    // ==========================================================
+    // 3. تهيئة بيئة Capacitor والتخزين في الهاتف
+    // ==========================================================
     window.addEventListener('DOMContentLoaded', async () => {
       if (window.Capacitor && window.Capacitor.Plugins.StatusBar) {
         const { StatusBar } = window.Capacitor.Plugins;
@@ -348,19 +680,16 @@
       }
     }
 
-    // --- 2. محرك استخراج التدفق المباشر عبر الوسيط المفتوح ---
+    // ==========================================================
+    // 4. محرك استخراج التدفق المباشر وتنزيل ملفات MP4
+    // ==========================================================
     function extractYouTubeId(url) {
       const match = url.match(/(?:shorts\/|v=|youtu\.be\/|\/v\/|embed\/)([a-zA-Z0-9_-]{11})/);
       return match ? match[1] : null;
     }
 
     async function resolveDirectStream(rawUrl, videoId) {
-      // المحاولة الأولى: خوادم Cobalt المتخصصة في دمج الصوت والصورة
-      const cobaltInstances = [
-        "https://cobaltapi.getnickel.app",
-        "https://co.wuk.sh"
-      ];
-
+      const cobaltInstances = ["https://cobaltapi.getnickel.app", "https://co.wuk.sh"];
       for (const host of cobaltInstances) {
         try {
           const res = await fetch(host, {
@@ -371,23 +700,13 @@
           if (res.ok) {
             const data = await res.json();
             if (data && data.url) {
-              return {
-                streamUrl: data.url,
-                title: "YouTube Short",
-                channel: "@ShortsCreator"
-              };
+              return { streamUrl: data.url, title: "YouTube Short", channel: "@ShortsCreator" };
             }
           }
         } catch (_) {}
       }
 
-      // المحاولة الثانية: خوادم Invidious لاستخراج تدفق MP4 مباشر ومدمج بالصوت
-      const invidiousInstances = [
-        "https://inv.tux.pizza",
-        "https://invidious.nerdvpn.de",
-        "https://invidious.privacydev.net"
-      ];
-
+      const invidiousInstances = ["https://inv.tux.pizza", "https://invidious.nerdvpn.de", "https://invidious.privacydev.net"];
       for (const host of invidiousInstances) {
         try {
           const res = await fetch(`${host}/api/v1/videos/${videoId}`);
@@ -406,16 +725,13 @@
           }
         } catch (_) {}
       }
-
       throw new Error("تعذر جلب ملف الفيديو من السيرفرات الوسيطة حالياً.");
     }
 
-    // --- 3. معالجة التنزيل والحفظ في مجلد الهاتف ---
     async function handleProcessLink() {
       const input = document.getElementById("videoUrlInput");
       const btn = document.getElementById("downloadBtn");
       const url = input.value.trim();
-
       if (!url) return;
 
       btn.disabled = true;
@@ -423,7 +739,7 @@
 
       try {
         let streamUrl = url;
-        let title = "فيديو مباشر";
+        let title = "فيديو محفوظ";
         let channel = "@LocalVideo";
 
         const ytId = extractYouTubeId(url);
@@ -434,14 +750,13 @@
           channel = resolved.channel;
         }
 
-        btn.innerText = "جاري الحفظ في مجلد Documents/ShortsVideos...";
+        btn.innerText = "جاري الحفظ في مجلد الهاتف...";
 
         if (window.Capacitor && window.Capacitor.Plugins.Filesystem) {
           const { Filesystem, Directory } = window.Capacitor.Plugins;
           const fileName = `short_${Date.now()}.mp4`;
           const filePath = `${TARGET_FOLDER}/${fileName}`;
 
-          // تنزيل مباشر وكتابة فورية في ذاكرة الهاتف عبر نواة أندرويد
           await Filesystem.downloadFile({
             url: streamUrl,
             path: filePath,
@@ -449,25 +764,12 @@
             progress: true
           });
 
-          // تحويل المسار إلى رابط وسائط محلي وتشغيله فوراً
-          const fileUri = await Filesystem.getUri({
-            path: filePath,
-            directory: Directory.Documents
-          });
-          const localSrc = window.Capacitor.convertFileSrc(fileUri.uri);
-
-          removePlaceholder();
-          renderShortCard({
-            src: localSrc,
-            title: title,
-            channel: channel
-          });
-
-          alert("تم تنزيل الفيديو وحفظه بنجاح في مجلد الهاتف!");
+          alert("تم حفظ الفيديو بنجاح في مجلد الهاتف!");
           input.value = "";
           closeModal();
+          await loadLocalShorts();
         } else {
-          alert("تنزيل الملفات في المجلدات متاح عند تثبيت التطبيق بصيغة APK على الهاتف.");
+          alert("التنزيل في المجلدات متاح بعد تثبيت تطبيق الـ APK على الهاتف.");
         }
       } catch (err) {
         alert("خطأ: " + (err.message || "حدث خطأ أثناء التنزيل."));
@@ -477,7 +779,6 @@
       }
     }
 
-    // --- 4. تحميل وتشغيل المقاطع المحفوظة محلياً ---
     async function loadLocalShorts() {
       if (!window.Capacitor || !window.Capacitor.Plugins.Filesystem) return;
       const { Filesystem, Directory } = window.Capacitor.Plugins;
@@ -488,8 +789,8 @@
           directory: Directory.Documents
         });
 
+        const loadedList = [];
         if (result.files && result.files.length > 0) {
-          removePlaceholder();
           for (const file of result.files) {
             const name = typeof file === 'string' ? file : file.name;
             if (name && name.endsWith('.mp4')) {
@@ -498,7 +799,8 @@
                 directory: Directory.Documents
               });
               const localSrc = window.Capacitor.convertFileSrc(fileUri.uri);
-              renderShortCard({
+              loadedList.push({
+                id: name,
                 src: localSrc,
                 title: name.replace('.mp4', ''),
                 channel: '@محفوظ_في_الهاتف'
@@ -506,81 +808,12 @@
             }
           }
         }
+
+        if (loadedList.length > 0) {
+          virtualizer.setVideos(loadedList);
+        }
       } catch (_) {}
     }
-
-    // --- 5. رندرة بطاقة الشورتس التفاعلية ---
-    const container = document.getElementById("shortsContainer");
-
-    function removePlaceholder() {
-      const p = document.getElementById("placeholder");
-      if (p) p.remove();
-    }
-
-    function renderShortCard(item) {
-      const card = document.createElement("div");
-      card.className = "short-card";
-
-      card.innerHTML = `
-        <video src="${item.src}" loop playsinline preload="metadata"></video>
-        <div class="overlay-gradient"></div>
-        <div class="action-bar">
-          <button class="action-btn" onclick="this.classList.toggle('liked')">
-            <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
-            <span>إعجاب</span>
-          </button>
-          <button class="action-btn">
-            <svg viewBox="0 0 24 24"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.58-6.59c.37-.36.59-.86.59-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg>
-            <span>Dislike</span>
-          </button>
-          <button class="action-btn">
-            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-            <span>تعليق</span>
-          </button>
-          <button class="action-btn">
-            <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/></svg>
-            <span>مشاركة</span>
-          </button>
-        </div>
-        <div class="meta-content">
-          <div class="channel-row">
-            <div class="channel-avatar"></div>
-            <span class="channel-name">${item.channel}</span>
-            <button class="subscribe-btn">اشتراك</button>
-          </div>
-          <div class="video-title">${item.title}</div>
-        </div>
-        <div class="progress-bar-container"><div class="progress-bar-fill"></div></div>
-      `;
-
-      const vid = card.querySelector("video");
-      if (vid) {
-        card.addEventListener("click", (e) => {
-          if (!e.target.closest(".action-bar") && !e.target.closest(".meta-content")) {
-            vid.paused ? vid.play() : vid.pause();
-          }
-        });
-        vid.addEventListener("timeupdate", () => {
-          const fill = card.querySelector(".progress-bar-fill");
-          if (vid.duration && fill) {
-            fill.style.width = `${(vid.currentTime / vid.duration) * 100}%`;
-          }
-        });
-      }
-
-      container.appendChild(card);
-      observer.observe(card);
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        const vid = e.target.querySelector("video");
-        if (vid) {
-          if (e.isIntersecting) vid.play().catch(() => {});
-          else { vid.pause(); vid.currentTime = 0; }
-        }
-      });
-    }, { threshold: 0.75 });
 
     function openModal() {
       document.getElementById("overlay").classList.add("active");
