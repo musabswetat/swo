@@ -10,54 +10,140 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      # --------------------------------------------------
+      # 1. تحميل المشروع
+      # --------------------------------------------------
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+
+      # --------------------------------------------------
+      # 2. Java 21
+      # --------------------------------------------------
       - name: Set up Java JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '21'
 
+
+      # --------------------------------------------------
+      # 3. Node 24
+      # Capacitor 8 يحتاج Node 22 أو أحدث
+      # --------------------------------------------------
       - name: Set up Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: 24
 
+
+      # --------------------------------------------------
+      # 4. التأكد من الإصدارات
+      # --------------------------------------------------
       - name: Check Node.js
         run: |
+          echo "Node:"
           node --version
+
+          echo "NPM:"
           npm --version
 
+
+      # --------------------------------------------------
+      # 5. تثبيت كل حزم المشروع
+      # TypeScript موجود الآن في package.json
+      # --------------------------------------------------
       - name: Install Dependencies
-        run: npm install
+        run: |
+          npm install
 
-      - name: Check Capacitor CLI
-        run: npx cap --version
 
+      # --------------------------------------------------
+      # 6. التأكد من Capacitor + TypeScript
+      # --------------------------------------------------
+      - name: Check Capacitor and TypeScript
+        run: |
+          echo "Capacitor:"
+          npx cap --version
+
+          echo "TypeScript:"
+          npx tsc --version
+
+
+      # --------------------------------------------------
+      # 7. إنشاء مشروع Android
+      # --------------------------------------------------
       - name: Add Android Platform
-        run: npx cap add android
+        run: |
+          npx cap add android
 
-      - name: Inject Permissions
+
+      # --------------------------------------------------
+      # 8. إضافة INTERNET + صلاحيات الوسائط
+      # --------------------------------------------------
+      - name: Inject Android Permissions
+        shell: bash
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
 
-          # إضافة أذونات التخزين والوسائط المطلوبة
-          sed -i '/<application/i \    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />' "$MANIFEST"
-          sed -i '/<application/i \    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />' "$MANIFEST"
-          sed -i '/<application/i \    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />' "$MANIFEST"
+          python3 - <<'PY'
+          from pathlib import Path
 
-      - name: Sync Web Assets to Android
-        run: npx cap sync android
+          manifest = Path("android/app/src/main/AndroidManifest.xml")
+          text = manifest.read_text()
 
+          permissions = [
+              '    <uses-permission android:name="android.permission.INTERNET" />',
+              '    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />',
+              '    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
+              '    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />'
+          ]
+
+          for permission in permissions:
+              if permission not in text:
+                  text = text.replace(
+                      '<application',
+                      permission + '\n    <application',
+                      1
+                  )
+
+          manifest.write_text(text)
+          PY
+
+
+      # --------------------------------------------------
+      # 9. إعداد إضافة yt-dlp الأصلية
+      # --------------------------------------------------
+      - name: Configure Native yt-dlp Plugin
+        run: |
+          npm run android:setup
+
+
+      # --------------------------------------------------
+      # 10. مزامنة ملفات الويب مع Android
+      # --------------------------------------------------
+      - name: Sync Capacitor
+        run: |
+          npx cap sync android
+
+
+      # --------------------------------------------------
+      # 11. بناء APK
+      # --------------------------------------------------
       - name: Build Debug APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
+
+      # --------------------------------------------------
+      # 12. رفع APK الناتج
+      # --------------------------------------------------
       - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
           name: Shorts-Fullscreen-App
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
